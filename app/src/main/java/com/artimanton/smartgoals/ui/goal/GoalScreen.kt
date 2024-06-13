@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -211,7 +212,7 @@ private fun SubjectScreenTopBar(
         navigationIcon = {
             IconButton(onClick = onBackButtonClick) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "navigate back"
                 )
             }
@@ -274,17 +275,17 @@ private fun GoalOverviewSection(
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
+                progress = { 1f },
                 modifier = Modifier.fillMaxSize(),
-                progress = 1f,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 strokeWidth = 4.dp,
                 strokeCap = StrokeCap.Round,
-                color = MaterialTheme.colorScheme.surfaceVariant
             )
             CircularProgressIndicator(
+                progress = { progress },
                 modifier = Modifier.fillMaxSize(),
-                progress = progress,
                 strokeWidth = 4.dp,
-                strokeCap = StrokeCap.Round
+                strokeCap = StrokeCap.Round,
             )
             Text(text = "$percentageProgress%")
         }

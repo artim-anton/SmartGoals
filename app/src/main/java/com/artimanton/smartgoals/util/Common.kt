@@ -17,7 +17,7 @@ enum class Priority(val title: String, val color: Color, val value: Int) {
     HIGH(title = "High", color = Red, value = 2);
 
     companion object {
-        fun fromInt(value: Int) = values().firstOrNull { it.value == value } ?: MEDIUM
+        fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: MEDIUM
     }
 }
 

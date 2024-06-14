@@ -43,6 +43,7 @@ hiltCompose = "1.2.0"
 coreKtx = "1.13.1"
 runtime = "2.9.0"
 accompanistPermissions = "0.31.1-alpha"
+lifecycleRuntimeComposeAndroid = "2.8.2"
 
 [libraries]
 
@@ -98,6 +99,7 @@ com-google-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-nav
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "runtime" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
+androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
 
 [bundles]
 room = [

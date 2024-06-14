@@ -2,6 +2,7 @@ package com.artimanton.smartgoals.util
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.ui.graphics.Color
 import com.artimanton.smartgoals.ui.theme.Green
 import com.artimanton.smartgoals.ui.theme.Orange
@@ -30,4 +31,26 @@ fun Long?.changeMillisToDateString(): String {
             .toLocalDate()
     } ?: LocalDate.now()
     return date.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+}
+
+
+fun Long.toHours(): Float {
+    val hours = this.toFloat() / 3600f
+    return try{
+        "%.2f".format(hours).toFloat()
+    }
+    catch (_:Exception){
+        0.0f
+    }
+
+
+}
+
+sealed class SnackBarEvent {
+    data class ShowSnackBar(
+        val message: String,
+        val duration: SnackbarDuration = SnackbarDuration.Short
+    ) : SnackBarEvent()
+
+    data object NavigateUp: SnackBarEvent()
 }

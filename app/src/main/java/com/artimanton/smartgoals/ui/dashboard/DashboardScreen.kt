@@ -78,7 +78,7 @@ fun DashboardScreenRoute(
         snackBarEvent = viewModel.snackBarEventFlow,
         onGoalCardClick = { goalId ->
             goalId?.let {
-                val navArg = GoalScreenNavArgs(subjectId = goalId)
+                val navArg = GoalScreenNavArgs(goalId = goalId)
                     navigator.navigate(GoalScreenRouteDestination(navArgs = navArg))
             }
         },

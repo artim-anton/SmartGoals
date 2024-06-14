@@ -21,7 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.artimanton.smartgoals.model.Goal
+import com.artimanton.smartgoals.domain.model.Goal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

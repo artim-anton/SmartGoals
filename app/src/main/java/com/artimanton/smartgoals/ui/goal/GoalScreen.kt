@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.artimanton.smartgoals.model.Goal
+import com.artimanton.smartgoals.domain.model.Goal
 import com.artimanton.smartgoals.sessions
 import com.artimanton.smartgoals.tasks
 import com.artimanton.smartgoals.ui.components.AddGoalDialog

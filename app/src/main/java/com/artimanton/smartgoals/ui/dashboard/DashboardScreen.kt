@@ -167,8 +167,11 @@ private fun DashboardScreen(
                 sectionTitle = "RECENT GOAL SESSIONS",
                 emptyListText = "You don't have any recent goal sessions.\n " +
                         "Start a goal session to begin recording your progress.",
-                sessions = sessions,
-                onDeleteIconClick = { isDeleteSessionDialogOpen = true }
+                sessions = recentSessions,
+                onDeleteIconClick = {
+                    onEvent(DashboardEvent.OnDeleteSessionButtonClick(it))
+                    isDeleteSessionDialogOpen = true
+                }
             )
         }
     }

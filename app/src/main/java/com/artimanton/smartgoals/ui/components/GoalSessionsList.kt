@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.artimanton.smartgoals.R
-import com.artimanton.smartgoals.model.Session
+import com.artimanton.smartgoals.domain.model.Session
 
 fun LazyListScope.studySessionsList(
     sectionTitle: String,

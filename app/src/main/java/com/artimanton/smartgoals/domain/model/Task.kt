@@ -1,5 +1,9 @@
-package com.artimanton.smartgoals.model
+package com.artimanton.smartgoals.domain.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 data class Task(
     val title: String,
     val description: String,
@@ -8,5 +12,6 @@ data class Task(
     val relatedToGoal: String,
     val isComplete: Boolean,
     val taskGoalId: Int,
-    val taskId: Int
+    @PrimaryKey(autoGenerate = true)
+    val taskId: Int? = null
 )

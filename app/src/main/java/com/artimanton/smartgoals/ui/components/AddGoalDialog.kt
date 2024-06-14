@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.artimanton.smartgoals.model.Goal
+import com.artimanton.smartgoals.domain.model.Goal
 
 @Composable
 fun AddGoalDialog(

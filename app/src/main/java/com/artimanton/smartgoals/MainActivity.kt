@@ -4,13 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.artimanton.smartgoals.ui.theme.SmartGoalsTheme
-import com.artimanton.smartgoals.model.Session
-import com.artimanton.smartgoals.model.Goal
-import com.artimanton.smartgoals.model.Task
+import androidx.compose.ui.graphics.toArgb
+import com.artimanton.smartgoals.domain.model.Goal
+import com.artimanton.smartgoals.domain.model.Session
+import com.artimanton.smartgoals.domain.model.Task
 import com.artimanton.smartgoals.ui.NavGraphs
+import com.artimanton.smartgoals.ui.theme.SmartGoalsTheme
 import com.ramcosta.composedestinations.DestinationsNavHost
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,31 +30,31 @@ val goals = listOf(
     Goal(
         name = "English",
         goalHours = 10f,
-        colors = Goal.goalCardColors[0],
+        colors = Goal.goalCardColors[0].map{it.toArgb()},
         goalId = 0
     ),
     Goal(
         name = "Physics",
         goalHours = 10f,
-        colors = Goal.goalCardColors[1],
+        colors = Goal.goalCardColors[1].map{it.toArgb()},
         goalId = 0
     ),
     Goal(
         name = "Maths",
         goalHours = 10f,
-        colors = Goal.goalCardColors[2],
+        colors = Goal.goalCardColors[2].map{it.toArgb()},
         goalId = 0
     ),
     Goal(
         name = "Geology",
         goalHours = 10f,
-        colors = Goal.goalCardColors[3],
+        colors = Goal.goalCardColors[3].map{it.toArgb()},
         goalId = 0
     ),
     Goal(
         name = "Fine Arts",
         goalHours = 10f,
-        colors = Goal.goalCardColors[4],
+        colors = Goal.goalCardColors[4].map{it.toArgb()},
         goalId = 0
     ),
 )

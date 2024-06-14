@@ -28,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,34 +36,49 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.artimanton.smartgoals.R
-import com.artimanton.smartgoals.ui.components.CountCard
-import com.artimanton.smartgoals.ui.components.GoalCard
-import com.artimanton.smartgoals.model.Goal
-import com.artimanton.smartgoals.sessions
+import com.artimanton.smartgoals.domain.model.Goal
+import com.artimanton.smartgoals.domain.model.Session
+import com.artimanton.smartgoals.domain.model.Task
 import com.artimanton.smartgoals.goals
-import com.artimanton.smartgoals.tasks
 import com.artimanton.smartgoals.ui.components.AddGoalDialog
+import com.artimanton.smartgoals.ui.components.CountCard
 import com.artimanton.smartgoals.ui.components.DeleteDialog
+import com.artimanton.smartgoals.ui.components.GoalCard
 import com.artimanton.smartgoals.ui.components.studySessionsList
 import com.artimanton.smartgoals.ui.components.tasksList
-import com.artimanton.smartgoals.ui.destinations.SessionScreenRouteDestination
 import com.artimanton.smartgoals.ui.destinations.GoalScreenRouteDestination
+import com.artimanton.smartgoals.ui.destinations.SessionScreenRouteDestination
 import com.artimanton.smartgoals.ui.destinations.TaskScreenRouteDestination
 import com.artimanton.smartgoals.ui.goal.GoalScreenNavArgs
 import com.artimanton.smartgoals.ui.task.TaskScreenNavArgs
+import com.artimanton.smartgoals.util.SnackBarEvent
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.flow.SharedFlow
 
 @Destination(start = true)
 @Composable
 fun DashboardScreenRoute(
     navigator: DestinationsNavigator
 ) {
+
+    val viewModel: DashboardViewModel = hiltViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+    val recentSessions by viewModel.recentSessions.collectAsStateWithLifecycle()
+
     DashboardScreen(
-        onGoalCardClick = { subjectId ->
-            subjectId?.let {
-                val navArg = GoalScreenNavArgs(subjectId = subjectId)
+        state = state,
+        tasks = tasks,
+        recentSessions = recentSessions,
+        onEvent = viewModel::onEvent,
+        snackBarEvent = viewModel.snackBarEventFlow,
+        onGoalCardClick = { goalId ->
+            goalId?.let {
+                val navArg = GoalScreenNavArgs(subjectId = goalId)
                     navigator.navigate(GoalScreenRouteDestination(navArgs = navArg))
             }
         },
@@ -81,6 +95,11 @@ fun DashboardScreenRoute(
 
 @Composable
 private fun DashboardScreen(
+    state: DashboardState,
+    tasks: List<Task>,
+    recentSessions: List<Session>,
+    onEvent: (DashboardEvent) -> Unit,
+    snackBarEvent: SharedFlow<SnackBarEvent>,
     onGoalCardClick: (Int?) -> Unit,
     onTaskCardClick: (Int?) -> Unit,
     onStartSessionButtonClick: () -> Unit
@@ -89,20 +108,34 @@ private fun DashboardScreen(
     var isAddGoalDialogOpen by rememberSaveable { mutableStateOf(false) }
     var isDeleteSessionDialogOpen by rememberSaveable { mutableStateOf(false) }
 
-    var goalName by remember { mutableStateOf("") }
-    var goalHours by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(Goal.goalCardColors.random()) }
+    //val snackBarHostState = remember { SnackBarHostState() }
+
+    /*LaunchedEffect(key1 = true) {
+        snackBarEvent.collectLatest { event ->
+            when(event) {
+                is SnackBarEvent.ShowSnackBar -> {
+                    snackBarHostState.showSnackBar(
+                        message = event.message,
+                        duration = event.duration
+                    )
+                }
+
+                SnackBarEvent.NavigateUp -> {}
+            }
+        }
+    }*/
 
     AddGoalDialog(
         isOpen = isAddGoalDialogOpen,
-        goalName = goalName,
-        goalHours = goalHours,
-        onGoalNameChange = { goalName = it },
-        onGoalHoursChange = { goalHours = it },
-        selectedColors = selectedColor,
-        onColorChange = { selectedColor = it },
+        goalName = state.goalName,
+        goalHours = state.goalStudyHours,
+        selectedColors = state.goalCardColors,
+        onGoalNameChange = { onEvent(DashboardEvent.OnSubjectNameChange(it)) },
+        onGoalHoursChange = { onEvent(DashboardEvent.OnGoalStudyHoursChange(it)) },
+        onColorChange = { onEvent(DashboardEvent.OnGoalCardColorChange(it)) },
         onDismissRequest = { isAddGoalDialogOpen = false },
         onConfirmButtonClick = {
+            onEvent(DashboardEvent.SaveGoal)
             isAddGoalDialogOpen = false
         }
     )
@@ -113,10 +146,14 @@ private fun DashboardScreen(
         bodyText = "Are you sure, you want to delete this session? Your goal hours will be reduced " +
                 "by this session time. This action can not be undone.",
         onDismissRequest = { isDeleteSessionDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSessionDialogOpen = false }
+        onConfirmButtonClick = {
+            onEvent(DashboardEvent.DeleteSession)
+            isDeleteSessionDialogOpen = false
+        }
     )
 
     Scaffold(
+        //snackbarHost = { SnackBarHost(hostState = snackBarHostState) },
         topBar = { DashboardScreenTopBar() }
     ) { paddingValues ->
         LazyColumn(
@@ -129,9 +166,9 @@ private fun DashboardScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp),
-                    goalCount = 5,
-                    doneHours = "10",
-                    goalHours = "15"
+                    goalCount = state.totalGoalCount,
+                    doneHours = state.totalGoalDoneHours.toString(),
+                    goalHours = state.totalGoalHours.toString()
                 )
             }
             item {
@@ -157,7 +194,7 @@ private fun DashboardScreen(
                 emptyListText = "You don't have any upcoming tasks.\n " +
                         "Click the + button in goal screen to add new task.",
                 tasks = tasks,
-                onCheckBoxClick = {},
+                onCheckBoxClick = { onEvent(DashboardEvent.OnTaskIsCompleteChange(it)) },
                 onTaskCardClick = onTaskCardClick
             )
             item {
@@ -212,7 +249,7 @@ private fun CountCardsSection(
         Spacer(modifier = Modifier.width(10.dp))
         CountCard(
             modifier = Modifier.weight(1f),
-            headingText = "Goal Hours",
+            headingText = "Goal Study Hours",
             count = goalHours
         )
     }
@@ -267,7 +304,7 @@ private fun GoalCardsSection(
             items(goalList) { goal ->
                 GoalCard(
                     goalName = goal.name,
-                    gradientColors = goal.colors,
+                    gradientColors = goal.colors.map { Color(it) },
                     onClick = { onGoalCardClick(goal.goalId) }
                 )
             }

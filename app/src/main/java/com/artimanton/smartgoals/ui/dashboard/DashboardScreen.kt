@@ -82,7 +82,7 @@ fun DashboardScreenRoute(
             }
         },
         onTaskCardClick = { taskId ->
-            val navArg = TaskScreenNavArgs(taskId = taskId, subjectId = null)
+            val navArg = TaskScreenNavArgs(taskId = taskId, goalId = null)
             navigator.navigate(TaskScreenRouteDestination(navArgs = navArg))
         },
         onStartSessionButtonClick = {

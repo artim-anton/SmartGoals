@@ -27,6 +27,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.artimanton.smartgoals.R
 import com.artimanton.smartgoals.domain.model.Session
+import com.artimanton.smartgoals.util.changeMillisToDateString
+import com.artimanton.smartgoals.util.toHours
 
 fun LazyListScope.studySessionsList(
     sectionTitle: String,
@@ -94,13 +96,13 @@ private fun GoalSessionCard(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = "${session.date}",
+                    text = session.date.changeMillisToDateString(),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "${session.duration} hr",
+                text = "${session.duration.toHours()} hr",
                 style = MaterialTheme.typography.titleMedium
             )
             IconButton(onClick = onDeleteIconClick) {

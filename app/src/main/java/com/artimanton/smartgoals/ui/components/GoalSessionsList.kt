@@ -61,6 +61,7 @@ fun LazyListScope.studySessionsList(
                     color = Color.Gray,
                     textAlign = TextAlign.Center
                 )
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }

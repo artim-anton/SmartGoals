@@ -25,10 +25,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,9 +44,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.artimanton.smartgoals.domain.model.Goal
-import com.artimanton.smartgoals.sessions
-import com.artimanton.smartgoals.tasks
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.artimanton.smartgoals.ui.components.AddGoalDialog
 import com.artimanton.smartgoals.ui.components.CountCard
 import com.artimanton.smartgoals.ui.components.DeleteDialog
@@ -51,8 +53,12 @@ import com.artimanton.smartgoals.ui.components.studySessionsList
 import com.artimanton.smartgoals.ui.components.tasksList
 import com.artimanton.smartgoals.ui.destinations.TaskScreenRouteDestination
 import com.artimanton.smartgoals.ui.task.TaskScreenNavArgs
+import com.artimanton.smartgoals.util.SnackBarEvent
+import com.example.studysmart.presentation.subject.GoalViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collectLatest
 
 data class GoalScreenNavArgs(
     val goalId: Int
@@ -63,14 +69,20 @@ data class GoalScreenNavArgs(
 fun GoalScreenRoute(
     navigator: DestinationsNavigator
 ) {
+    val viewModel: GoalViewModel = hiltViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     GoalScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+        snackBarEvent = viewModel.snackBarEventFlow,
         onBackButtonClick = { navigator.navigateUp() },
         onAddTaskButtonClick = {
-            val navArg = TaskScreenNavArgs(taskId = null, subjectId = -1)
+            val navArg = TaskScreenNavArgs(taskId = null, goalId = state.currentGoalId)
             navigator.navigate(TaskScreenRouteDestination(navArgs = navArg))
         },
         onTaskCardClick = { taskId ->
-            val navArg = TaskScreenNavArgs(taskId = taskId, subjectId = null)
+            val navArg = TaskScreenNavArgs(taskId = taskId, goalId = null)
             navigator.navigate(TaskScreenRouteDestination(navArgs = navArg))
         }
     )
@@ -79,6 +91,9 @@ fun GoalScreenRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GoalScreen(
+    state: GoalState,
+    onEvent: (GoalEvent) -> Unit,
+    snackBarEvent: SharedFlow<SnackBarEvent>,
     onBackButtonClick: () -> Unit,
     onAddTaskButtonClick: () -> Unit,
     onTaskCardClick: (Int?) -> Unit
@@ -88,35 +103,58 @@ private fun GoalScreen(
     val listState = rememberLazyListState()
     val isFABExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
 
-    var isEditSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
-    var isDeleteSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
+    var isEditGoalDialogOpen by rememberSaveable { mutableStateOf(false) }
+    var isDeleteGoalDialogOpen by rememberSaveable { mutableStateOf(false) }
     var isDeleteSessionDialogOpen by rememberSaveable { mutableStateOf(false) }
 
-    var goalName by remember { mutableStateOf("") }
-    var goalHours by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(Goal.goalCardColors.random()) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = true) {
+        snackBarEvent.collectLatest { event ->
+            when (event) {
+                is SnackBarEvent.ShowSnackBar -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = event.duration
+                    )
+                }
+
+                SnackBarEvent.NavigateUp -> {
+                    onBackButtonClick()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = state.studiedHours, key2 = state.goalStudyHours) {
+        onEvent(GoalEvent.UpdateProgress)
+    }
 
     AddGoalDialog(
-        isOpen = isEditSubjectDialogOpen,
-        goalName = goalName,
-        goalHours = goalHours,
-        onGoalNameChange = { goalName = it },
-        onGoalHoursChange = { goalHours = it },
-        selectedColors = selectedColor,
-        onColorChange = { selectedColor = it },
-        onDismissRequest = { isEditSubjectDialogOpen = false },
+        isOpen = isEditGoalDialogOpen,
+        goalName = state.goalName,
+        goalHours = state.goalStudyHours,
+        onGoalNameChange = { onEvent(GoalEvent.OnGoalNameChange(it)) },
+        onGoalHoursChange = { onEvent(GoalEvent.OnGoalStudyHoursChange(it)) },
+        selectedColors = state.goalCardColors,
+        onColorChange = { onEvent(GoalEvent.OnGoalCardColorChange(it)) },
+        onDismissRequest = { isEditGoalDialogOpen = false },
         onConfirmButtonClick = {
-            isEditSubjectDialogOpen = false
+            onEvent(GoalEvent.UpdateGoal)
+            isEditGoalDialogOpen = false
         }
     )
 
     DeleteDialog(
-        isOpen = isDeleteSubjectDialogOpen,
+        isOpen = isDeleteGoalDialogOpen,
         title = "Delete Goal?",
-        bodyText = "Are you sure, you want to delete this goal? All related " +
-                "tasks and goal sessions will be permanently removed. This action can not be undone",
-        onDismissRequest = { isDeleteSubjectDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSubjectDialogOpen = false }
+        bodyText = "Are you sure, you want to delete this Goal? All related " +
+                "tasks and study sessions will be permanently removed. This action can not be undone",
+        onDismissRequest = { isDeleteGoalDialogOpen = false },
+        onConfirmButtonClick = {
+            onEvent(GoalEvent.DeleteGoal)
+            isDeleteGoalDialogOpen = false
+        }
     )
 
     DeleteDialog(
@@ -125,17 +163,21 @@ private fun GoalScreen(
         bodyText = "Are you sure, you want to delete this session? Your goal hours will be reduced " +
                 "by this session time. This action can not be undone.",
         onDismissRequest = { isDeleteSessionDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSessionDialogOpen = false }
+        onConfirmButtonClick = {
+            onEvent(GoalEvent.DeleteSession)
+            isDeleteSessionDialogOpen = false
+        }
     )
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            SubjectScreenTopBar(
-                title = "English",
+            GoalScreenTopBar(
+                title = state.goalName,
                 onBackButtonClick = onBackButtonClick,
-                onDeleteButtonClick = { isDeleteSubjectDialogOpen = true },
-                onEditButtonClick = { isEditSubjectDialogOpen = true },
+                onDeleteButtonClick = { isDeleteGoalDialogOpen = true },
+                onEditButtonClick = { isEditGoalDialogOpen = true },
                 scrollBehavior = scrollBehavior
             )
         },
@@ -159,17 +201,17 @@ private fun GoalScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp),
-                    doneHours = "10",
-                    goalHours = "15",
-                    progress = 0.75f
+                    studiedHours = state.studiedHours.toString(),
+                    goalHours = state.goalStudyHours,
+                    progress = state.progress
                 )
             }
             tasksList(
                 sectionTitle = "UPCOMING TASKS",
                 emptyListText = "You don't have any upcoming tasks.\n " +
                         "Click the + button to add new task.",
-                tasks = tasks,
-                onCheckBoxClick = {},
+                tasks = state.upcomingTasks,
+                onCheckBoxClick = { onEvent(GoalEvent.OnTaskIsCompleteChange(it)) },
                 onTaskCardClick = onTaskCardClick
             )
             item {
@@ -179,8 +221,8 @@ private fun GoalScreen(
                 sectionTitle = "COMPLETED TASKS",
                 emptyListText = "You don't have any completed tasks.\n " +
                         "Click the check box on completion of task.",
-                tasks = tasks,
-                onCheckBoxClick = {},
+                tasks = state.completedTasks,
+                onCheckBoxClick = { onEvent(GoalEvent.OnTaskIsCompleteChange(it)) },
                 onTaskCardClick = onTaskCardClick
             )
             item {
@@ -190,8 +232,11 @@ private fun GoalScreen(
                 sectionTitle = "RECENT GOAL SESSIONS",
                 emptyListText = "You don't have any recent goal sessions.\n " +
                         "Start a goal session to begin recording your progress.",
-                sessions = sessions,
-                onDeleteIconClick = { isDeleteSessionDialogOpen = true }
+                sessions = state.recentSessions,
+                onDeleteIconClick = {
+                    isDeleteSessionDialogOpen = true
+                    onEvent(GoalEvent.OnDeleteSessionButtonClick(it))
+                }
             )
         }
     }
@@ -199,7 +244,7 @@ private fun GoalScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SubjectScreenTopBar(
+private fun GoalScreenTopBar(
     title: String,
     onBackButtonClick: () -> Unit,
     onDeleteButtonClick: () -> Unit,
@@ -228,13 +273,13 @@ private fun SubjectScreenTopBar(
             IconButton(onClick = onDeleteButtonClick) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete goal"
+                    contentDescription = "Delete Goal"
                 )
             }
             IconButton(onClick = onEditButtonClick) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit goal"
+                    contentDescription = "Edit Goal"
                 )
             }
         }
@@ -244,11 +289,11 @@ private fun SubjectScreenTopBar(
 @Composable
 private fun GoalOverviewSection(
     modifier: Modifier,
-    doneHours: String,
+    studiedHours: String,
     goalHours: String,
     progress: Float
 ) {
-    val percentageProgress = remember(progress) {
+    val percentageProgress = remember(key1 = progress) {
         (progress * 100).toInt().coerceIn(0, 100)
     }
 
@@ -266,7 +311,7 @@ private fun GoalOverviewSection(
         CountCard(
             modifier = Modifier.weight(1f),
             headingText = "Done Hours",
-            count = doneHours
+            count = studiedHours
         )
         Spacer(modifier = Modifier.width(10.dp))
         Box(

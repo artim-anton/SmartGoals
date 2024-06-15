@@ -41,9 +41,9 @@ class DashboardViewModel @Inject constructor(
     ) { state, goalCount, goalHours, goal, totalSessionDuration ->
         state.copy(
             totalGoalCount = goalCount,
-            totalGoalDoneHours = goalHours,
+            totalGoalDoneHours = totalSessionDuration.toHours(),
             goals = goal,
-            totalGoalHours = totalSessionDuration.toHours()
+            totalGoalHours = goalHours
         )
     }.stateIn(
         scope = viewModelScope,

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
@@ -30,7 +29,7 @@ fun GoalListBottomSheet(
     isOpen: Boolean,
     goals: List<Goal>,
     bottomSheetTitle: String = "Related to goal",
-    onSubjectClicked: (Goal) -> Unit,
+    onGoalClicked: (Goal) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     if (isOpen) {
@@ -56,7 +55,7 @@ fun GoalListBottomSheet(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onSubjectClicked(subject) }
+                            .clickable { onGoalClicked(subject) }
                             .padding(8.dp)
                     ) {
                         Text(text = subject.name)

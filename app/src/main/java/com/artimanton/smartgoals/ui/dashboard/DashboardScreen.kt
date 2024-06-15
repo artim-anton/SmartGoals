@@ -42,7 +42,6 @@ import com.artimanton.smartgoals.R
 import com.artimanton.smartgoals.domain.model.Goal
 import com.artimanton.smartgoals.domain.model.Session
 import com.artimanton.smartgoals.domain.model.Task
-import com.artimanton.smartgoals.goals
 import com.artimanton.smartgoals.ui.components.AddGoalDialog
 import com.artimanton.smartgoals.ui.components.CountCard
 import com.artimanton.smartgoals.ui.components.DeleteDialog
@@ -174,7 +173,7 @@ private fun DashboardScreen(
             item {
                 GoalCardsSection(
                     modifier = Modifier.fillMaxWidth(),
-                    goalList = goals,
+                    goalList = state.goals,
                     onAddIconClicked = { isAddGoalDialogOpen = true },
                     onGoalCardClick = onGoalCardClick
                 )

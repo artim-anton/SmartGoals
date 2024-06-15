@@ -54,7 +54,6 @@ import com.artimanton.smartgoals.ui.components.TaskDatePicker
 import com.artimanton.smartgoals.util.Priority
 import com.artimanton.smartgoals.util.SnackBarEvent
 import com.artimanton.smartgoals.util.changeMillisToDateString
-import com.example.studysmart.presentation.task.TaskViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.SharedFlow
@@ -64,7 +63,7 @@ import java.time.Instant
 
 data class TaskScreenNavArgs(
     val taskId: Int?,
-    val subjectId: Int?
+    val goalId: Int?
 )
 
 @Destination(navArgsDelegate = TaskScreenNavArgs::class)

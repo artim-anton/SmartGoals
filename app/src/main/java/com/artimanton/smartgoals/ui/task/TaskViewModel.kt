@@ -1,7 +1,5 @@
-package com.example.studysmart.presentation.task
+package com.artimanton.smartgoals.ui.task
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -10,9 +8,6 @@ import com.artimanton.smartgoals.domain.model.Task
 import com.artimanton.smartgoals.domain.repository.GoalRepository
 import com.artimanton.smartgoals.domain.repository.TaskRepository
 import com.artimanton.smartgoals.ui.navArgs
-import com.artimanton.smartgoals.ui.task.TaskEvent
-import com.artimanton.smartgoals.ui.task.TaskScreenNavArgs
-import com.artimanton.smartgoals.ui.task.TaskState
 import com.artimanton.smartgoals.util.Priority
 import com.artimanton.smartgoals.util.SnackBarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,7 +53,6 @@ class TaskViewModel @Inject constructor(
         fetchSubject()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun onEvent(event: TaskEvent) {
         when (event) {
             is TaskEvent.OnTitleChange -> {
@@ -133,14 +127,13 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun saveTask() {
         viewModelScope.launch {
             val state = _state.value
             if (state.goalId == null || state.relatedToGoal == null) {
                 _snackBarEventFlow.emit(
                     SnackBarEvent.ShowSnackBar(
-                        message = "Please select subject related to the task"
+                        message = "Please select goal related to the task"
                     )
                 )
                 return@launch
@@ -196,7 +189,7 @@ class TaskViewModel @Inject constructor(
 
     private fun fetchSubject() {
         viewModelScope.launch {
-            navArgs.subjectId?.let { id ->
+            navArgs.goalId?.let { id ->
                 subjectRepository.getGoalById(id)?.let { goal ->
                     _state.update {
                         it.copy(

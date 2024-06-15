@@ -86,7 +86,7 @@ fun SessionScreenRoute(
 
     SessionScreen(
         state = state,
-        snackbarEvent = viewModel.snackBarEventFlow,
+        snackBarEvent = viewModel.snackBarEventFlow,
         onEvent = viewModel::onEvent,
         onBackButtonClick = { navigator.navigateUp() },
         timerService = timerService
@@ -97,7 +97,7 @@ fun SessionScreenRoute(
 @Composable
 private fun SessionScreen(
     state: SessionState,
-    snackbarEvent: SharedFlow<SnackBarEvent>,
+    snackBarEvent: SharedFlow<SnackBarEvent>,
     onEvent: (SessionEvent) -> Unit,
     onBackButtonClick: () -> Unit,
     timerService: StudySessionTimerService
@@ -118,7 +118,7 @@ private fun SessionScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(key1 = true) {
-        snackbarEvent.collectLatest { event ->
+        snackBarEvent.collectLatest { event ->
             when (event) {
                 is SnackBarEvent.ShowSnackBar -> {
                     snackbarHostState.showSnackbar(
@@ -148,11 +148,11 @@ private fun SessionScreen(
         isOpen = isBottomSheetOpen,
         goals = state.goals,
         onDismissRequest = { isBottomSheetOpen = false },
-        onGoalClicked = { subject ->
+        onGoalClicked = { goal ->
             scope.launch { sheetState.hide() }.invokeOnCompletion {
                 if (!sheetState.isVisible) isBottomSheetOpen = false
             }
-            onEvent(SessionEvent.OnRelatedGoalChange(subject))
+            onEvent(SessionEvent.OnRelatedGoalChange(goal))
         }
     )
 
@@ -190,12 +190,12 @@ private fun SessionScreen(
                 )
             }
             item {
-                RelatedToSubjectSection(
+                RelatedToGoalSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
-                    relatedToSubject = state.relatedToGoal ?: "",
-                    selectSubjectButtonClick = { isBottomSheetOpen = true },
+                    relatedToGoal = state.relatedToGoal ?: "",
+                    selectGoalButtonClick = { isBottomSheetOpen = true },
                     seconds = seconds
                 )
             }
@@ -214,7 +214,7 @@ private fun SessionScreen(
                             )
                             timerService.goalId.value = state.goalId
                         } else {
-                            onEvent(SessionEvent.NotifyToUpdateSubject)
+                            onEvent(SessionEvent.NotifyToUpdateGoal)
                         }
                     },
                     cancelButtonClick = {
@@ -323,10 +323,10 @@ private fun TimerSection(
 }
 
 @Composable
-private fun RelatedToSubjectSection(
+private fun RelatedToGoalSection(
     modifier: Modifier,
-    relatedToSubject: String,
-    selectSubjectButtonClick: () -> Unit,
+    relatedToGoal: String,
+    selectGoalButtonClick: () -> Unit,
     seconds: String
 ) {
     Column(modifier = modifier) {
@@ -340,11 +340,11 @@ private fun RelatedToSubjectSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = relatedToSubject,
+                text = relatedToGoal,
                 style = MaterialTheme.typography.bodyLarge
             )
             IconButton(
-                onClick = selectSubjectButtonClick,
+                onClick = selectGoalButtonClick,
                 enabled = seconds == "00"
             ) {
                 Icon(

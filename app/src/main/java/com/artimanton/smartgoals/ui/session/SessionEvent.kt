@@ -8,7 +8,7 @@ sealed class SessionEvent {
     data class SaveSession(val duration: Long) : SessionEvent()
     data class OnDeleteSessionButtonClick(val session: Session) : SessionEvent()
     data object DeleteSession : SessionEvent()
-    data object NotifyToUpdateSubject : SessionEvent()
+    data object NotifyToUpdateGoal : SessionEvent()
     data class UpdateGoalIdAndRelatedGoal(
         val goalId: Int?,
         val relatedToGoal: String?

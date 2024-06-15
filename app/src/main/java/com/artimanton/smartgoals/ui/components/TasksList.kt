@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.artimanton.smartgoals.R
 import com.artimanton.smartgoals.domain.model.Task
 import com.artimanton.smartgoals.util.Priority
+import com.artimanton.smartgoals.util.changeMillisToDateString
 
 fun LazyListScope.tasksList(
     sectionTitle: String,
@@ -107,7 +108,7 @@ private fun TaskCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${task.dueDate}",
+                    text = task.dueDate.changeMillisToDateString(),
                     style = MaterialTheme.typography.bodySmall
                 )
             }

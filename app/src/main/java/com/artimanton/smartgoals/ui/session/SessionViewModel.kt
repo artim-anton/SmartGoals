@@ -1,7 +1,5 @@
 package com.artimanton.smartgoals.ui.session
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -46,10 +44,9 @@ class SessionViewModel @Inject constructor(
     private val _snackBarEventFlow = MutableSharedFlow<SnackBarEvent>()
     val snackBarEventFlow = _snackBarEventFlow.asSharedFlow()
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun onEvent(event: SessionEvent) {
         when (event) {
-            SessionEvent.NotifyToUpdateSubject -> notifyToUpdateGoal()
+            SessionEvent.NotifyToUpdateGoal -> notifyToUpdateGoal()
             SessionEvent.DeleteSession -> deleteSession()
             is SessionEvent.OnDeleteSessionButtonClick -> {
                 _state.update {
@@ -109,7 +106,6 @@ class SessionViewModel @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun insertSession(duration: Long) {
         viewModelScope.launch {
             if (duration < 36) {
